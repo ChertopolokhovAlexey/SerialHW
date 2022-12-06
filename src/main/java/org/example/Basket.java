@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Basket {
-    protected int[] amount;
+public class Basket implements Serializable{
     protected String[] products;
+    protected int[] amount;
     protected int[] price;
     protected int total;
     Map<Integer, Integer> list = new HashMap<>();
@@ -25,21 +25,15 @@ public class Basket {
         }
     }
 
-    static Basket loadFromTxtFile(File textFile) {
-        try (BufferedReader br = new BufferedReader(new FileReader(textFile))) {
-            String[] productList = br.readLine().split("@");
-            String[] priceFromFile = br.readLine().split("@");
-            String[] amountFromFile = br.readLine().split("@");
-            int[] priceList = new int[productList.length];
-            int[] amountList = new int[productList.length];
-            for (int i = 0; i < productList.length; i++) {
-                priceList[i] = Integer.parseInt(priceFromFile[i]);
-                amountList[i] = Integer.parseInt(amountFromFile[i]);
-            }
-            return new Basket(productList, priceList, amountList);
-        } catch (IOException e) {
-            throw new RuntimeException();
+    static Basket loadFromBinFile(File file) {
+        Basket basket = null;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
+            basket =  (Basket) ois.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return basket;
+
     }
 
     public void addToCart(int productNum, int amount) {
@@ -71,7 +65,7 @@ public class Basket {
 
     public void printCart() {
         System.out.println("Ваша корзина:");
-        for(Integer i : list.keySet()) {
+        for (Integer i : list.keySet()) {
             if (list.get(i) != 0) {
                 System.out.println(products[i] + ": " + list.get(i) + " шт на сумму: " + (list.get(i) * price[i]) + " руб");
                 this.total = total + (list.get(i) * price[i]);
@@ -90,21 +84,16 @@ public class Basket {
         System.out.println("Желаете добавить что-то из списка:");
     }
 
-    public void saveTxt(File textFile) {
-        try (PrintWriter printList = new PrintWriter(textFile)) {
-            for (String product : products) {
-                printList.print(product + "@");
-            }
-            printList.print("\n");
-            for (int i : price) {
-                printList.print(i + "@");
-            }
-            printList.print("\n");
-            for (int i = 0; i < products.length; i++) {
-                printList.print(list.get(i) == null ? 0 + "@" : list.get(i) + "@");
-            }
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
+    public void saveBin(File file) {
+        int[] amountList = new int[products.length];
+        for (int i = 0; i < products.length; i++) {
+            amountList[i] = list.get(i) == (null)? 0: list.get(i);
+        }
+        Basket basket = new Basket(products, price, amountList);
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            oos.writeObject(basket);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -6,21 +6,21 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-
         String[] products = {"Хлеб", "Молоко", "Яйца", "Сыр"};
         int[] price = {30, 55, 57, 170};
 
         Basket basket;
 
-        File textFile = new File("myBasket.txt");
-        if (textFile.exists()) {
-            basket = Basket.loadFromTxtFile(textFile);
+        Scanner scanner = new Scanner(System.in);
+
+        File file = new File("Basket.bin");
+        if (file.exists()) {
+            basket = Basket.loadFromBinFile(file);
             basket.printBasket();
+
         } else {
             basket = new Basket(products, price);
         }
-
         for (int i = 0; i < price.length; i++) {
             System.out.println((i + 1) + " " + products[i] + ": " + price[i] + " руб/шт");
         }
@@ -44,9 +44,8 @@ public class Main {
             } catch (NumberFormatException e) {
                 System.out.println("Неверный ввод! Вводить нужно числа!");
             }
-            basket.saveTxt(textFile);
+            basket.saveBin(file);
         }
         basket.printCart();
     }
 }
-
