@@ -1,6 +1,8 @@
 package org.example;
 
+import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -12,7 +14,8 @@ public class Main {
         int[] price = {30, 55, 57, 170};
 
         Basket basket;
-
+        ClientLog clientLog = new ClientLog(new ArrayList<>(),new ArrayList<>());
+        File txtFile = new File("log.csv");
         File textFile = new File("myBasket.txt");
         if (textFile.exists()) {
             basket = Basket.loadFromTxtFile(textFile);
@@ -41,12 +44,14 @@ public class Main {
                 int productNum = Integer.parseInt(parts[0]) - 1;
                 int amount = Integer.parseInt(parts[1]);
                 basket.addToCart(productNum, amount);
+                clientLog.log(productNum, amount);
             } catch (NumberFormatException e) {
                 System.out.println("Неверный ввод! Вводить нужно числа!");
             }
             basket.saveTxt(textFile);
         }
         basket.printCart();
+        clientLog.exportAsCSV(txtFile);
     }
 }
 
