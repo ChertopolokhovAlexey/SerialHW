@@ -14,7 +14,11 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.7.1</version>
+        </dependency>
     </dependencies>
 
 </project>
