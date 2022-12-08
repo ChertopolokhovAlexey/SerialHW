@@ -14,7 +14,8 @@ public class Main {
         int[] price = {30, 55, 57, 170};
 
         Basket basket;
-        ClientLog clientLog = new ClientLog(new ArrayList<>(),new ArrayList<>());
+        ClientLog clientLog = new ClientLog(0, 0);
+
         File txtFile = new File("log.csv");
         File textFile = new File("myBasket.txt");
         if (textFile.exists()) {
