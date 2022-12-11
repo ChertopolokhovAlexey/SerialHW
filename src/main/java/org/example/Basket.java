@@ -60,9 +60,10 @@ public class Basket {
     protected static String[] toArr(String inputString) {
         String replace = inputString
                 .replace("[", "")
-//                .replace("\"", "")
-                .replace("]", "");
-        return replace.split(",");
+                .replace(",", ",\t")
+                .replace("]", "")
+                .replace("\"", "");
+        return replace.split(",\t");
     }
 
 
@@ -123,9 +124,9 @@ public class Basket {
         for (int i = 0; i < products.length; i++) {
             productsArray.add(products[i]);
             pricesArray.add(price[i]);
-            if (list.get(i)==null) {
+            if (list.get(i) == null) {
                 amountsArray.add(0);
-            }else {
+            } else {
                 amountsArray.add(list.get(i));
             }
         }
