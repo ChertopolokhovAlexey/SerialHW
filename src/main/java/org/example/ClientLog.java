@@ -34,7 +34,7 @@ public class ClientLog {
         logList.add(clientLog);
     }
 
-    void exportAsCSV(File txtFile) {
+    void exportAsCSV(File txtFile){
         if (!txtFile.exists()) {
 
             try (CSVWriter writer = new CSVWriter(new FileWriter(txtFile,true))) {

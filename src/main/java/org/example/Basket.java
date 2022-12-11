@@ -1,8 +1,14 @@
 package org.example;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class Basket {
     protected int[] amount;
@@ -10,6 +16,8 @@ public class Basket {
     protected int[] price;
     protected int total;
     Map<Integer, Integer> list = new HashMap<>();
+//    Gson json = new Gson();
+
 
     public Basket(String[] products, int[] price) {
         this.products = products;
@@ -25,22 +33,38 @@ public class Basket {
         }
     }
 
+    // TODO: 09.12.2022 load from json
     static Basket loadFromTxtFile(File textFile) {
-        try (BufferedReader br = new BufferedReader(new FileReader(textFile))) {
-            String[] productList = br.readLine().split("@");
-            String[] priceFromFile = br.readLine().split("@");
-            String[] amountFromFile = br.readLine().split("@");
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(textFile));
+            JSONObject productsBasket = (JSONObject) obj;
+            JSONArray productJson = (JSONArray) productsBasket.get("product");
+            JSONArray priceJson = (JSONArray) productsBasket.get("price");
+            JSONArray amountJson = (JSONArray) productsBasket.get("amount");
+            String[] productList = toArr(productJson.toString());
+            String[] prices = toArr(priceJson.toString());
+            String[] amounts = toArr(amountJson.toString());
             int[] priceList = new int[productList.length];
             int[] amountList = new int[productList.length];
             for (int i = 0; i < productList.length; i++) {
-                priceList[i] = Integer.parseInt(priceFromFile[i]);
-                amountList[i] = Integer.parseInt(amountFromFile[i]);
+                priceList[i] = Integer.parseInt(prices[i]);
+                amountList[i] = Integer.parseInt(amounts[i]);
             }
             return new Basket(productList, priceList, amountList);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             throw new RuntimeException();
         }
     }
+
+    protected static String[] toArr(String inputString) {
+        String replace = inputString
+                .replace("[", "")
+//                .replace("\"", "")
+                .replace("]", "");
+        return replace.split(",");
+    }
+
 
     public void addToCart(int productNum, int amount) {
         productNum = getProductNum(productNum);
@@ -71,7 +95,7 @@ public class Basket {
 
     public void printCart() {
         System.out.println("Ваша корзина:");
-        for(Integer i : list.keySet()) {
+        for (Integer i : list.keySet()) {
             if (list.get(i) != 0) {
                 System.out.println(products[i] + ": " + list.get(i) + " шт на сумму: " + (list.get(i) * price[i]) + " руб");
                 this.total = total + (list.get(i) * price[i]);
@@ -90,19 +114,27 @@ public class Basket {
         System.out.println("Желаете добавить что-то из списка:");
     }
 
-    public void saveTxt(File textFile) {
+    // TODO: 09.12.2022 write to json
+    public void saveJson(File textFile) {
+        JSONObject productsBasket = new JSONObject();
+        JSONArray productsArray = new JSONArray();
+        JSONArray pricesArray = new JSONArray();
+        JSONArray amountsArray = new JSONArray();
+        for (int i = 0; i < products.length; i++) {
+            productsArray.add(products[i]);
+            pricesArray.add(price[i]);
+            if (list.get(i)==null) {
+                amountsArray.add(0);
+            }else {
+                amountsArray.add(list.get(i));
+            }
+        }
+        productsBasket.put("product", productsArray);
+        productsBasket.put("price", pricesArray);
+        productsBasket.put("amount", amountsArray);
+
         try (PrintWriter printList = new PrintWriter(textFile)) {
-            for (String product : products) {
-                printList.print(product + "@");
-            }
-            printList.print("\n");
-            for (int i : price) {
-                printList.print(i + "@");
-            }
-            printList.print("\n");
-            for (int i = 0; i < products.length; i++) {
-                printList.print(list.get(i) == null ? 0 + "@" : list.get(i) + "@");
-            }
+            printList.write(productsBasket.toJSONString());
         } catch (IOException e) {
             System.out.println("Error: " + e);
         }

@@ -1,8 +1,6 @@
 package org.example;
 
-import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -17,8 +15,9 @@ public class Main {
         ClientLog clientLog = new ClientLog(0, 0);
 
         File txtFile = new File("log.csv");
-        File textFile = new File("myBasket.txt");
+        File textFile = new File("basket.json");
         if (textFile.exists()) {
+            // TODO: 09.12.2022 загрузка корзину десериализацией из json-а из файла basket.json
             basket = Basket.loadFromTxtFile(textFile);
             basket.printBasket();
         } else {
@@ -49,7 +48,8 @@ public class Main {
             } catch (NumberFormatException e) {
                 System.out.println("Неверный ввод! Вводить нужно числа!");
             }
-            basket.saveTxt(textFile);
+            // TODO: 09.12.2022 вместо вызова метода saveTxt в методе main сериализуйте корзину в json-формате в файл basket.json 
+            basket.saveJson(textFile);
         }
         basket.printCart();
         clientLog.exportAsCSV(txtFile);
