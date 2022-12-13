@@ -32,12 +32,28 @@ public class Basket {
             addToCart(i, amount[i]);
         }
     }
+    static Basket loadFromTxtFile(File loadFile) {
+        try (BufferedReader br = new BufferedReader(new FileReader(loadFile))) {
+            String[] productList = br.readLine().split("@");
+            String[] priceFromFile = br.readLine().split("@");
+            String[] amountFromFile = br.readLine().split("@");
+            int[] priceList = new int[productList.length];
+            int[] amountList = new int[productList.length];
+            for (int i = 0; i < productList.length; i++) {
+                priceList[i] = Integer.parseInt(priceFromFile[i]);
+                amountList[i] = Integer.parseInt(amountFromFile[i]);
+            }
+            return new Basket(productList, priceList, amountList);
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
+    }
 
     // TODO: 09.12.2022 load from json
-    static Basket loadFromTxtFile(File textFile) {
+    static Basket loadFromJSONFile(File loadFile) {
         JSONParser parser = new JSONParser();
         try {
-            Object obj = parser.parse(new FileReader(textFile));
+            Object obj = parser.parse(new FileReader(loadFile));
             JSONObject productsBasket = (JSONObject) obj;
             JSONArray productJson = (JSONArray) productsBasket.get("product");
             JSONArray priceJson = (JSONArray) productsBasket.get("price");
@@ -115,8 +131,26 @@ public class Basket {
         System.out.println("Желаете добавить что-то из списка:");
     }
 
+    public void saveTxt(File saveFile) {
+        try (PrintWriter printList = new PrintWriter(saveFile)) {
+            for (String product : products) {
+                printList.print(product + "@");
+            }
+            printList.print("\n");
+            for (int i : price) {
+                printList.print(i + "@");
+            }
+            printList.print("\n");
+            for (int i = 0; i < products.length; i++) {
+                printList.print(list.get(i) == null ? 0 + "@" : list.get(i) + "@");
+            }
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
     // TODO: 09.12.2022 write to json
-    public void saveJson(File textFile) {
+    public void saveJson(File saveFile) {
         JSONObject productsBasket = new JSONObject();
         JSONArray productsArray = new JSONArray();
         JSONArray pricesArray = new JSONArray();
@@ -134,7 +168,7 @@ public class Basket {
         productsBasket.put("price", pricesArray);
         productsBasket.put("amount", amountsArray);
 
-        try (PrintWriter printList = new PrintWriter(textFile)) {
+        try (PrintWriter printList = new PrintWriter(saveFile)) {
             printList.write(productsBasket.toJSONString());
         } catch (IOException e) {
             System.out.println("Error: " + e);
