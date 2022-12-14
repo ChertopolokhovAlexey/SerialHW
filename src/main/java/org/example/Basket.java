@@ -1,22 +1,21 @@
 package org.example;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 
-public class Basket {
+public class Basket implements Serializable {
     protected int[] amount;
     protected String[] products;
     protected int[] price;
     protected int total;
     Map<Integer, Integer> list = new HashMap<>();
-//    Gson json = new Gson();
+    Gson gson = new Gson();
 
 
     public Basket(String[] products, int[] price) {
@@ -51,37 +50,16 @@ public class Basket {
 
     // TODO: 09.12.2022 load from json
     static Basket loadFromJSONFile(File loadFile) {
-        JSONParser parser = new JSONParser();
-        try {
-            Object obj = parser.parse(new FileReader(loadFile));
-            JSONObject productsBasket = (JSONObject) obj;
-            JSONArray productJson = (JSONArray) productsBasket.get("product");
-            JSONArray priceJson = (JSONArray) productsBasket.get("price");
-            JSONArray amountJson = (JSONArray) productsBasket.get("amount");
-            String[] productList = toArr(productJson.toString());
-            String[] prices = toArr(priceJson.toString());
-            String[] amounts = toArr(amountJson.toString());
-            int[] priceList = new int[productList.length];
-            int[] amountList = new int[productList.length];
-            for (int i = 0; i < productList.length; i++) {
-                priceList[i] = Integer.parseInt(prices[i]);
-                amountList[i] = Integer.parseInt(amounts[i]);
-            }
-            return new Basket(productList, priceList, amountList);
-        } catch (IOException | ParseException e) {
-            throw new RuntimeException();
+        Gson gson = new Gson();
+        String json = null;
+        try (Scanner scanner = new Scanner(new FileInputStream(loadFile))){
+            json = scanner.nextLine();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return  gson.fromJson(json, Basket.class);
     }
-
-    protected static String[] toArr(String inputString) {
-        String replace = inputString
-                .replace("[", "")
-                .replace(",", ",\t")
-                .replace("]", "")
-                .replace("\"", "");
-        return replace.split(",\t");
-    }
-
 
     public void addToCart(int productNum, int amount) {
         productNum = getProductNum(productNum);
@@ -150,29 +128,20 @@ public class Basket {
     }
 
     // TODO: 09.12.2022 write to json
-    public void saveJson(File saveFile) {
-        JSONObject productsBasket = new JSONObject();
-        JSONArray productsArray = new JSONArray();
-        JSONArray pricesArray = new JSONArray();
-        JSONArray amountsArray = new JSONArray();
+    public void saveJson(File saveFile)  {
+        int[] amountList = new int[products.length];
         for (int i = 0; i < products.length; i++) {
-            productsArray.add(products[i]);
-            pricesArray.add(price[i]);
-            if (list.get(i) == null) {
-                amountsArray.add(0);
-            } else {
-                amountsArray.add(list.get(i));
-            }
+            amountList[i] = list.get(i) == (null)? 0: list.get(i);
         }
-        productsBasket.put("product", productsArray);
-        productsBasket.put("price", pricesArray);
-        productsBasket.put("amount", amountsArray);
+        Basket basket1 = new Basket(this.products, this.price, amountList);
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        try (PrintWriter writer = new PrintWriter(saveFile)) {
+            String json = gson.toJson(basket1);
 
-        try (PrintWriter printList = new PrintWriter(saveFile)) {
-            printList.write(productsBasket.toJSONString());
-        } catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
+            writer.write(json);
+
+        } catch (IOException e) { e.printStackTrace();}
     }
 }
 
