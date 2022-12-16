@@ -6,3 +6,4 @@ Basket.bin
 target/
 log.csv
 basket.json
+client.csv

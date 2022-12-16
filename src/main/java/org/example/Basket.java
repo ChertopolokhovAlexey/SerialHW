@@ -15,7 +15,7 @@ public class Basket implements Serializable {
     protected int[] price;
     protected int total;
     Map<Integer, Integer> list = new HashMap<>();
-    Gson gson = new Gson();
+    transient Gson gson = new Gson();
 
 
     public Basket(String[] products, int[] price) {
